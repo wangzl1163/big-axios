@@ -1,5 +1,12 @@
+/*
+ * @Description:
+ * @Author: 王占领
+ * @Date: 2024-01-11 14:36:18
+ * @LastEditTime: 2024-01-25 10:54:20
+ * @LastEditors: 王占领
+ */
 const path = require('path');
-const SmartBannerPlugin = require('smart-banner-webpack-plugin');
+const webpack = require('webpack');
 const banner = require('../license.js');
 
 module.exports = {
@@ -28,7 +35,7 @@ module.exports = {
          '@': path.resolve(__dirname, '../src')
       }
    },
-   plugins: [new SmartBannerPlugin(banner)],
+   plugins: [new webpack.BannerPlugin(banner)],
    module: {
       rules: [
          {
