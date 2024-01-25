@@ -1,7 +1,7 @@
 {
    "name": "big-axios",
-   "version": "1.0.0",
-   "description": "一个基于网络请求库",
+   "version": "1.0.0-beta.0",
+   "description": "一个基于 axios 的网络请求库",
    "main": "dist/big-axios.js",
    "types": "dist/index.d.ts",
    "repository": {
@@ -21,7 +21,9 @@
    },
    "homepage": "https://github.com/wangzl1163/big-axios#readme",
    "scripts": {
-      "components": "node ./build/components.js"
+      "build:dev": "webpack --config build/webpack.dev.config.js && node build/copyTypeFile.js",
+      "build:prod": "webpack --config build/webpack.prod.config.js && tsc",
+      "publish-all": "npm run build:dev && npm run build:prod && npm publish"
    },
    "devDependencies": {
       "@babel/core": "^7.23.7",
