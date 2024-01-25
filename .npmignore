@@ -9,7 +9,7 @@ babel.config.json
 .prettierrc.json
 .gitignore
 babel.config.json
-jsconfig.json
+tsconfig.json
 #build tools
 build
 
