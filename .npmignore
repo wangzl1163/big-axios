@@ -1,0 +1,20 @@
+examples
+node_modules
+test
+.eslintrc.js
+license.js
+babel.config.json
+.browserslistrc
+.gitignore
+.prettierrc.json
+.gitignore
+babel.config.json
+jsconfig.json
+#build tools
+build
+
+# vscode config
+.vscode
+
+#definition
+!dist/src
