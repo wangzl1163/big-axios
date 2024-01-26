@@ -2,14 +2,13 @@ examples
 node_modules
 test
 .eslintrc.js
-license.js
-babel.config.json
+.eslintignore
 .browserslistrc
 .gitignore
 .prettierrc.json
-.gitignore
 babel.config.json
 tsconfig.json
+
 #build tools
 build
 
@@ -17,4 +16,8 @@ build
 .vscode
 
 #definition
-!dist/src
+src
+types
+
+# 自动生成版权声明
+license.js
