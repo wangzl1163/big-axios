@@ -1,7 +1,7 @@
 const { copyFile } = require('fs/promises');
 
 try {
-   copyFile('./src/index.d.ts', './dist/index.d.ts').then(() => {
+   copyFile('./types/index.d.ts', './dist/index.d.ts').then(() => {
       console.log('copied successfully');
    });
 } catch (e) {
