@@ -32,9 +32,9 @@ npm install big-axios
 ```javascript
 import request from "big-axios";
 
-request.$get("/api/user").then(res => {})
+request.get("/api/user").then(res => {})
 ```
 
 2.1 概念
->
->
+> serviceApiErrorMsgs： 服务端返回的错误信息。其值格式为：{ 400: { msg: "请求失败" } }
+> extraOptions： 非 axios 本身的配置项。其默认值为：{ loginPath = '/login', successfulCodes = [200, 0, '200'] }，其中 loginPath 为权限验证未通过时跳转到登录页面的登录页面 url，successfulCodes 为服务端 api 返回的业务状态码。
