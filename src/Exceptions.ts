@@ -1,7 +1,7 @@
-import type { Exception } from './index';
+import type { ExceptionMsg } from '../types/index';
 
 // 系统错误
-const errorMsgs: Record<string, Exception> = {
+const errorMsgs: Record<string, ExceptionMsg> = {
    400: {
       msg: '错误的请求'
    },
@@ -53,11 +53,11 @@ const errorMsgs: Record<string, Exception> = {
 };
 
 class Exception {
-   private serviceApiErrorMsgs: Record<string, Exception>;
-   constructor(msgs: Record<string, Exception>) {
+   private serviceApiErrorMsgs: Record<string, ExceptionMsg>;
+   constructor(msgs: Record<string, ExceptionMsg>) {
       this.serviceApiErrorMsgs = {
          '-9999': {
-            msg: process.env.NODE_ENV === 'development' ? '请求参数有问题，检查去吧，闷骚的程序猿！' : '操作失败，请稍后尝试'
+            msg: '发起网络请求失败'
          },
          ...msgs
       };

@@ -1,20 +1,25 @@
 import axios from 'axios';
 import Exceptions from './Exceptions';
 
-import type { AxiosRequestConfig, AxiosInstance, CreateAxiosDefaults, AxiosInterceptorOptions } from 'axios';
-import type { Method, ResponsePromise, Response, Exception } from './index';
+import type {
+   AxiosRequestConfig,
+   AxiosInstance,
+   CreateAxiosDefaults,
+   AxiosInterceptorOptions,
+   InternalAxiosRequestConfig,
+   AxiosResponse
+} from 'axios';
+import type { Method, ResponsePromise, Response, ExceptionMsg, BigAxios as BigAxiosInstance } from '../types/index';
 
 const queue401 = [];
 let controller = new AbortController();
-let postRequestList: string[{ url: string; data: string }] = [];
+let postRequestList: { url: string; data: string }[] = [];
 
 class BigAxios {
-   private http: AxiosInstance;
+   private http: AxiosInstance = axios.create();
    private url: string;
    private type: string | undefined;
-   private data: {
-      [key: string]: Record<string, string>;
-   };
+   private data: Record<string, unknown>;
    private options: AxiosRequestConfig;
    private interceptorIds: number[] = [];
    private exception: Exceptions = null;
@@ -32,13 +37,13 @@ class BigAxios {
     * @param serviceApiErrorMsgs 服务端返回的错误码与错误信息
     * @param config 配置，可参考 axios 的配置项
     * @param {loginPath,successfulCodes} loginPath：登录页面路径，默认值：/login，用于未登录时跳转到登录页面；successfulCodes：业务 api 返回的成功状态码，默认值：[200, 0, '200']
-    * @returns {AxiosInstance} big-axios 实例
+    * @returns {BigAxiosInstance} big-axios 实例
     */
    create(
-      serviceApiErrorMsgs: Record<string, Exception>,
+      serviceApiErrorMsgs: Record<string, ExceptionMsg>,
       config?: CreateAxiosDefaults,
-      { loginPath = '/login', successfulCodes = [200, 0, '200'] }: { loginPath: string; successfulCodes: (string | number)[] } = {}
-   ): AxiosInstance {
+      { loginPath = '/login', successfulCodes = [200, 0, '200'] }: { loginPath?: string; successfulCodes?: (string | number)[] } = {}
+   ): BigAxiosInstance {
       this.exception = new Exceptions(serviceApiErrorMsgs);
 
       this.url = '';
@@ -71,7 +76,7 @@ class BigAxios {
                   response.headers['content-type'] === 'application/octet-stream' ||
                   response.headers['content-type'] === 'image/Jpeg'
                ) {
-                  return Promise.resolve(response.data);
+                  return Promise.resolve(response);
                } else {
                   const errorData = {
                      ...response,
@@ -130,20 +135,22 @@ class BigAxios {
 
    interceptors = {
       request: {
-         ...this.http.interceptors,
+         ...this.http.interceptors.request,
          use(
-            onFulfilled?: ((value: V) => V | Promise<V>) | null,
-            onRejected?: ((error: unknown) => unknown) | null,
+            onFulfilled?: ((value: InternalAxiosRequestConfig) => InternalAxiosRequestConfig | Promise<InternalAxiosRequestConfig>) | null,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            onRejected?: ((error: any) => any) | null,
             options: AxiosInterceptorOptions = { synchronous: false, runWhen: null }
          ): number {
             return this.http.interceptors.request.use(onFulfilled, onRejected, options);
          }
       },
       response: {
-         ...this.http.interceptors,
+         ...this.http.interceptors.response,
          use(
-            onFulfilled?: ((value: V) => V | Promise<V>) | null,
-            onRejected?: ((error: unknown) => unknown) | null,
+            onFulfilled?: ((value: AxiosResponse) => AxiosResponse | Promise<AxiosResponse>) | null,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            onRejected?: ((error: any) => any) | null,
             options: AxiosInterceptorOptions = { synchronous: false, runWhen: null }
          ): number {
             return this.http.interceptors.response.use(onFulfilled, onRejected, options);
@@ -154,7 +161,7 @@ class BigAxios {
    ajax<D = unknown, M = string, U = Response<D, M>>(
       url: string,
       data: Record<string, unknown> = {},
-      { type = 'GET', options = {} }: { type: Method; options: AxiosRequestConfig } = {}
+      { type = 'GET', options = {} }: { type?: Method; options?: AxiosRequestConfig } = {}
    ): ResponsePromise<D, M, U> {
       this.url = url;
       this.type = type.toLocaleUpperCase().trim();
@@ -163,17 +170,17 @@ class BigAxios {
 
       switch (this.type) {
          case 'GET': {
-            return new Promise((resolve, reject) => {
+            return new Promise<U>((resolve, reject) => {
                const config = Object.assign(this.data, this.options);
-               http
-                  .get(this.url, config)
+               this.http
+                  .get<U>(this.url, config)
                   .then((response) => {
                      // 图片
                      if (response instanceof Blob) {
-                        return resolve(response);
+                        return resolve(response.data);
                      }
 
-                     return resolve(response);
+                     return resolve(response.data);
                   })
                   .catch((err) => {
                      this.log(err);
@@ -182,24 +189,24 @@ class BigAxios {
             });
          }
          case 'POST': {
-            return new Promise((resolve, reject) => {
+            return new Promise<U>((resolve, reject) => {
                if (!this.url.includes('login')) {
                   const dataJson = JSON.stringify(this.data);
-                  if (postRequestList.find((pd) => pd.url === this.url && pd === dataJson)) {
+                  if (postRequestList.find((pd) => pd.url === this.url && pd.data === dataJson)) {
                      return reject({ message: '请不要提交重复的数据' });
                   }
                   postRequestList.push({ url: this.url, data: dataJson });
                }
 
-               http
-                  .post(this.url, this.data, this.options)
+               this.http
+                  .post<U>(this.url, this.data, this.options)
                   .then((response) => {
                      // blob类型
                      if (response instanceof Blob) {
-                        return resolve(response);
+                        return resolve(response.data);
                      }
 
-                     return resolve(response);
+                     return resolve(response.data);
                   })
                   .catch((err) => {
                      postRequestList = postRequestList.filter((pd) => pd.url !== err.config.url || pd.data !== err.config.data);
@@ -211,11 +218,11 @@ class BigAxios {
             });
          }
          case 'PUT': {
-            return new Promise((resolve, reject) => {
-               http
-                  .put(this.url, this.data, this.options)
+            return new Promise<U>((resolve, reject) => {
+               this.http
+                  .put<U>(this.url, this.data, this.options)
                   .then((response) => {
-                     return resolve(response);
+                     return resolve(response.data);
                   })
                   .catch((err) => {
                      this.log(err);
@@ -224,11 +231,11 @@ class BigAxios {
             });
          }
          case 'DELETE': {
-            return new Promise((resolve, reject) => {
-               http
-                  .delete(this.url, this.options)
+            return new Promise<U>((resolve, reject) => {
+               this.http
+                  .delete<U>(this.url, this.options)
                   .then((response) => {
-                     return resolve(response);
+                     return resolve(response.data);
                   })
                   .catch((err) => {
                      this.log(err);
@@ -240,7 +247,7 @@ class BigAxios {
    }
 
    get<D = unknown, M = string, U = Response<D, M>>(url: string, data = {}, options: AxiosRequestConfig = {}): ResponsePromise<D, M, U> {
-      return this.ajax<T, R>(url, data, { options: options });
+      return this.ajax(url, data, { options: options });
    }
 
    post<D = unknown, M = string, U = Response<D, M>>(url: string, data = {}, options: AxiosRequestConfig = {}): ResponsePromise<D, M, U> {
