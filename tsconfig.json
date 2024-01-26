@@ -5,9 +5,11 @@
          "@/*": ["src/*"]
       },
       "target": "esnext",
-      "module": "ESNext",
+      "module": "NodeNext",
       "allowJs": true,
-      "outDir": "dist"
+      "outDir": "dist",
+      "moduleResolution": "NodeNext",
+      "types": ["./types/index"]
    },
    "exclude": ["node_modules", "dist", "build"]
 }
