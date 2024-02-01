@@ -56,5 +56,5 @@ export class BigAxios {
    // ): ResponsePromise<D, M, U>;
 }
 
-const ba: BigAxios;
+declare const ba: BigAxios;
 export default ba;
