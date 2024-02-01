@@ -6,6 +6,8 @@ export type Response<D = unknown, M = string> = { code: number | string; data: D
 
 export type ResponsePromise<D = unknown, M = string, U = Response<D, M>> = Promise<U>;
 
+export type ExceptionMsg = { msg: string; callback?: () => void };
+
 export class BigAxios {
    create(
       serviceApiErrorMsgs: Record<string, ExceptionMsg>,
@@ -54,4 +56,5 @@ export class BigAxios {
    // ): ResponsePromise<D, M, U>;
 }
 
-export type ExceptionMsg = { msg: string; callback?: () => void };
+declare const ba: BigAxios;
+export default ba;
