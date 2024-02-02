@@ -1,5 +1,5 @@
 /*!
- * @license :big-axios - V1.0.0-beta.2 - 01/02/2024
+ * @license :big-axios - V1.0.0-beta.3 - 02/02/2024
  * https://github.com/wangzl1163/big-axios
  * Copyright (c) 2024 @wangzl1163; Licensed MIT
  */
@@ -273,23 +273,19 @@ class BigAxios {
   interceptors = {
     request: {
       ...this.http.interceptors.request,
-      use(onFulfilled,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      onRejected, options = {
+      use: (onFulfilled, onRejected, options = {
         synchronous: false,
         runWhen: null
-      }) {
+      }) => {
         return this.http.interceptors.request.use(onFulfilled, onRejected, options);
       }
     },
     response: {
       ...this.http.interceptors.response,
-      use(onFulfilled,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      onRejected, options = {
+      use: (onFulfilled, onRejected, options = {
         synchronous: false,
         runWhen: null
-      }) {
+      }) => {
         return this.http.interceptors.response.use(onFulfilled, onRejected, options);
       }
     }
