@@ -136,23 +136,23 @@ class BigAxios {
    interceptors = {
       request: {
          ...this.http.interceptors.request,
-         use(
+         use: (
             onFulfilled?: ((value: InternalAxiosRequestConfig) => InternalAxiosRequestConfig | Promise<InternalAxiosRequestConfig>) | null,
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             onRejected?: ((error: any) => any) | null,
             options: AxiosInterceptorOptions = { synchronous: false, runWhen: null }
-         ): number {
+         ): number => {
             return this.http.interceptors.request.use(onFulfilled, onRejected, options);
          }
       },
       response: {
          ...this.http.interceptors.response,
-         use(
+         use: (
             onFulfilled?: ((value: AxiosResponse) => AxiosResponse | Promise<AxiosResponse>) | null,
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             onRejected?: ((error: any) => any) | null,
             options: AxiosInterceptorOptions = { synchronous: false, runWhen: null }
-         ): number {
+         ): number => {
             return this.http.interceptors.response.use(onFulfilled, onRejected, options);
          }
       }
