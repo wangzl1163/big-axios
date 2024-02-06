@@ -2,9 +2,9 @@ import type { AxiosRequestConfig, CreateAxiosDefaults, AxiosInterceptorManager, 
 
 export type Method = 'GET' | 'DELETE' | 'HEAD' | 'OPTIONS' | 'POST' | 'PUT' | 'PATCH' | 'PURGE' | 'LINK' | 'UNLINK';
 
-export type Response<D = unknown, M = string> = { code: number | string; data: D; message: M; msg?: string };
+export type Response<D = any, M = string> = { code: number | string; data: D; message: M; msg?: string };
 
-export type ResponsePromise<D = unknown, M = string, U = Response<D, M>> = Promise<U>;
+export type ResponsePromise<D = any, M = string, U = Response<D, M>> = Promise<U>;
 
 export type ExceptionMsg = { msg: string; callback?: () => void };
 
@@ -19,39 +19,39 @@ export class BigAxios {
       response: AxiosInterceptorManager<AxiosResponse>;
    };
    //  getUri(config?: AxiosRequestConfig): string;
-   ajax<D = unknown, M = string, U = Response<D, M>>(
+   ajax<D = any, M = string, U = Response<D, M>>(
       url: string,
-      data: Record<string, unknown>,
+      data: Record<string, any>,
       { type, options }: { type?: Method; options?: AxiosRequestConfig }
    ): ResponsePromise<D, M, U>;
-   get<D = unknown, M = string, U = Response<D, M>>(
+   get<D = any, M = string, U = Response<D, M>>(
       url: string,
-      data?: Record<string, unknown>,
+      data?: Record<string, any>,
       options?: AxiosRequestConfig
    ): ResponsePromise<D, M, U>;
-   delete<D = unknown, M = string, U = Response<D, M>>(url: string, options?: AxiosRequestConfig): ResponsePromise<D, M, U>;
-   // head<D = unknown, M = string, U = Response<D, M>>(url: string, data:Record<string, unknown>, options: AxiosRequestConfig): ResponsePromise<D, M, U>;
-   // options<D = unknown, M = string, U = Response<D, M>>(url: string, data:Record<string, unknown>, options: AxiosRequestConfig): ResponsePromise<D, M, U>;
-   post<D = unknown, M = string, U = Response<D, M>>(
+   delete<D = any, M = string, U = Response<D, M>>(url: string, options?: AxiosRequestConfig): ResponsePromise<D, M, U>;
+   // head<D = any, M = string, U = Response<D, M>>(url: string, data:Record<string, any>, options: AxiosRequestConfig): ResponsePromise<D, M, U>;
+   // options<D = any, M = string, U = Response<D, M>>(url: string, data:Record<string, any>, options: AxiosRequestConfig): ResponsePromise<D, M, U>;
+   post<D = any, M = string, U = Response<D, M>>(
       url: string,
-      data?: Record<string, unknown>,
+      data?: Record<string, any>,
       options?: AxiosRequestConfig
    ): ResponsePromise<D, M, U>;
-   put<D = unknown, M = string, U = Response<D, M>>(
+   put<D = any, M = string, U = Response<D, M>>(
       url: string,
-      data?: Record<string, unknown>,
+      data?: Record<string, any>,
       options?: AxiosRequestConfig
    ): ResponsePromise<D, M, U>;
-   // patch<D = unknown, M = string, U = Response<D, M>>(url: string, data:Record<string, unknown>, options: AxiosRequestConfig): ResponsePromise<D, M, U>;
-   // postForm<D = unknown, M = string, U = Response<D, M>>(
+   // patch<D = any, M = string, U = Response<D, M>>(url: string, data:Record<string, any>, options: AxiosRequestConfig): ResponsePromise<D, M, U>;
+   // postForm<D = any, M = string, U = Response<D, M>>(
    //    url: string,
-   //    data:Record<string, unknown>,
+   //    data:Record<string, any>,
    //    options: AxiosRequestConfig
    // ): ResponsePromise<D, M, U>;
-   // putForm<D = unknown, M = string, U = Response<D, M>>(url: string, data:Record<string, unknown>, options: AxiosRequestConfig): ResponsePromise<D, M, U>;
-   // patchForm<D = unknown, M = string, U = Response<D, M>>(
+   // putForm<D = any, M = string, U = Response<D, M>>(url: string, data:Record<string, any>, options: AxiosRequestConfig): ResponsePromise<D, M, U>;
+   // patchForm<D = any, M = string, U = Response<D, M>>(
    //    url: string,
-   //    data:Record<string, unknown>,
+   //    data:Record<string, any>,
    //    options: AxiosRequestConfig
    // ): ResponsePromise<D, M, U>;
 }
