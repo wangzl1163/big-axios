@@ -10,6 +10,7 @@ module.exports = {
    parser: '@typescript-eslint/parser',
    rules: {
       'no-tabs': ['error', { allowIndentationTabs: true }],
-      '@typescript-eslint/indent': 'off'
+      '@typescript-eslint/indent': 'off',
+      '@typescript-eslint/no-explicit-any': 'off'
    }
 };

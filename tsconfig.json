@@ -9,7 +9,8 @@
       "allowJs": true,
       "outDir": "dist",
       "moduleResolution": "NodeNext",
-      "types": ["./types/index"]
+      "types": ["./types/index"],
+      "noImplicitAny": true
    },
    "exclude": ["node_modules", "dist", "build"]
 }

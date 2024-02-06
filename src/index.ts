@@ -19,7 +19,7 @@ class BigAxios {
    private http: AxiosInstance = axios.create();
    private url: string;
    private type: string | undefined;
-   private data: Record<string, unknown>;
+   private data: Record<string, any>;
    private options: AxiosRequestConfig;
    private interceptorIds: number[] = [];
    private exception: Exceptions = null;
@@ -158,9 +158,9 @@ class BigAxios {
       }
    };
 
-   ajax<D = unknown, M = string, U = Response<D, M>>(
+   ajax<D = any, M = string, U = Response<D, M>>(
       url: string,
-      data: Record<string, unknown> = {},
+      data: Record<string, any> = {},
       { type = 'GET', options = {} }: { type?: Method; options?: AxiosRequestConfig } = {}
    ): ResponsePromise<D, M, U> {
       this.url = url;
@@ -246,19 +246,19 @@ class BigAxios {
       }
    }
 
-   get<D = unknown, M = string, U = Response<D, M>>(url: string, data = {}, options: AxiosRequestConfig = {}): ResponsePromise<D, M, U> {
+   get<D = any, M = string, U = Response<D, M>>(url: string, data = {}, options: AxiosRequestConfig = {}): ResponsePromise<D, M, U> {
       return this.ajax(url, data, { options: options });
    }
 
-   post<D = unknown, M = string, U = Response<D, M>>(url: string, data = {}, options: AxiosRequestConfig = {}): ResponsePromise<D, M, U> {
+   post<D = any, M = string, U = Response<D, M>>(url: string, data = {}, options: AxiosRequestConfig = {}): ResponsePromise<D, M, U> {
       return this.ajax(url, data, { type: 'POST', options: options });
    }
 
-   put<D = unknown, M = string, U = Response<D, M>>(url: string, data = {}, options: AxiosRequestConfig = {}): ResponsePromise<D, M, U> {
+   put<D = any, M = string, U = Response<D, M>>(url: string, data = {}, options: AxiosRequestConfig = {}): ResponsePromise<D, M, U> {
       return this.ajax(url, data, { type: 'PUT', options: options });
    }
 
-   delete<D = unknown, M = string, U = Response<D, M>>(url: string, options: AxiosRequestConfig = {}): ResponsePromise<D, M, U> {
+   delete<D = any, M = string, U = Response<D, M>>(url: string, options: AxiosRequestConfig = {}): ResponsePromise<D, M, U> {
       return this.ajax(url, {}, { type: 'DELETE', options: options });
    }
 
