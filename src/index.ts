@@ -9,7 +9,7 @@ import type {
    InternalAxiosRequestConfig,
    AxiosResponse
 } from 'axios';
-import type { Method, ResponsePromise, Response, ExceptionMsg, BigAxios as BigAxiosInstance } from '../types/index';
+import type { Method, ResponsePromise, Response, ExceptionMsg, BigAxios as BigAxiosInstance, ExtraOptions } from '../types/index';
 
 const queue401 = [];
 let controller = new AbortController();
@@ -36,20 +36,22 @@ class BigAxios {
     * 创建 big-axios 实例
     * @param serviceApiErrorMsgs 服务端返回的错误码与错误信息
     * @param config 配置，可参考 axios 的配置项
-    * @param {loginPath,successfulCodes} loginPath：登录页面路径，默认值：/login，用于未登录时跳转到登录页面；successfulCodes：业务 api 返回的成功状态码，默认值：[200, 0, '200']
+    * @param extraOptions loginPath：登录页面路径，默认值：/login，用于未登录时跳转到登录页面；
+    *                     successfulCodes：业务 api 返回的成功状态码，默认值：[200, 0, '200']；
+    *                     responseDataObjectKey：请求响应数据（response.data）中的值为请求结果的属性的名称，默认值：data；
+    *                     defaultResponseData：用于指定请求返回结果的默认值，结合 responseDataObjectKey 使用；
     * @returns {BigAxiosInstance} big-axios 实例
     */
-   create(
-      serviceApiErrorMsgs: Record<string, ExceptionMsg>,
-      config?: CreateAxiosDefaults,
-      { loginPath = '/login', successfulCodes = [200, 0, '200'] }: { loginPath?: string; successfulCodes?: (string | number)[] } = {}
-   ): BigAxiosInstance {
+   create(serviceApiErrorMsgs: Record<string, ExceptionMsg>, config?: CreateAxiosDefaults, extraOptions: ExtraOptions): BigAxiosInstance {
       this.exception = new Exceptions(serviceApiErrorMsgs);
+
+      const myOptions = { loginPath: '/login', successfulCodes: [200, 0, '200'], responseDataObjectKey: 'data', ...extraOptions };
 
       this.url = '';
       this.data = {};
 
       this.http = axios.create(config);
+
       // 创建内置请求拦截器
       this.interceptorIds.push(
          this.http.interceptors.request.use(
@@ -67,12 +69,13 @@ class BigAxios {
             }
          )
       );
+
       // 创建内置响应拦截器
       this.interceptorIds.push(
          this.http.interceptors.response.use(
             (response) => {
                if (
-                  successfulCodes.includes(response.data.code) ||
+                  myOptions.successfulCodes.includes(response.data.code) ||
                   response.headers['content-type'] === 'application/octet-stream' ||
                   response.headers['content-type'] === 'image/Jpeg'
                ) {
@@ -102,8 +105,8 @@ class BigAxios {
                            err.response.data.message || err.response.data.errMsg || '登录信息已过期'
                         );
 
-                        if (!location.href.includes(loginPath)) {
-                           location.href = loginPath;
+                        if (!location.href.includes(myOptions.loginPath)) {
+                           location.href = myOptions.loginPath;
                         }
                      }
                   } else {
@@ -127,6 +130,25 @@ class BigAxios {
 
                return Promise.reject(errorData);
             }
+         )
+      );
+      this.interceptorIds.push(
+         this.http.interceptors.response.use(
+            (response) => {
+               if (
+                  myOptions.successfulCodes.includes(response.data.code) &&
+                  response.data[responseDataObjectKey] === null &&
+                  Object.hasOwn(myOptions, 'defaultResponseData')
+               ) {
+                  return Promise.resolve({
+                     ...response,
+                     data: { ...response.data, [myOptions.responseDataObjectKey]: myOptions.defaultResponseData }
+                  });
+               } else {
+                  return response;
+               }
+            },
+            (err) => err
          )
       );
 

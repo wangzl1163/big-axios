@@ -1,4 +1,18 @@
+/*
+ * @Description: 类型声明文件
+ * @Author:
+ * @Date: 2024-01-12 13:45:16
+ * @LastEditTime: 2024-07-01 14:56:26
+ * @LastEditors: Please set LastEditors
+ */
 import type { AxiosRequestConfig, CreateAxiosDefaults, AxiosInterceptorManager, InternalAxiosRequestConfig, AxiosResponse } from 'axios';
+
+export type ExtraOptions = {
+   loginPath?: string;
+   successfulCodes?: (string | number)[];
+   defaultResponseData?: any;
+   responseDataObjectKey?: string;
+};
 
 export type Method = 'GET' | 'DELETE' | 'HEAD' | 'OPTIONS' | 'POST' | 'PUT' | 'PATCH' | 'PURGE' | 'LINK' | 'UNLINK';
 
@@ -9,11 +23,7 @@ export type ResponsePromise<D = any, M = string, U = Response<D, M>> = Promise<U
 export type ExceptionMsg = { msg: string; callback?: () => void };
 
 export class BigAxios {
-   create(
-      serviceApiErrorMsgs: Record<string, ExceptionMsg>,
-      config?: CreateAxiosDefaults,
-      extraOptions?: { loginPath?: string; successfulCodes?: (string | number)[] }
-   ): this;
+   create(serviceApiErrorMsgs: Record<string, ExceptionMsg>, config?: CreateAxiosDefaults, extraOptions?: ExtraOptions): this;
    interceptors: {
       request: AxiosInterceptorManager<InternalAxiosRequestConfig>;
       response: AxiosInterceptorManager<AxiosResponse>;
