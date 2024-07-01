@@ -42,7 +42,7 @@ class BigAxios {
     *                     defaultResponseData：用于指定请求返回结果的默认值，结合 responseDataObjectKey 使用；
     * @returns {BigAxiosInstance} big-axios 实例
     */
-   create(serviceApiErrorMsgs: Record<string, ExceptionMsg>, config?: CreateAxiosDefaults, extraOptions: ExtraOptions): BigAxiosInstance {
+   create(serviceApiErrorMsgs: Record<string, ExceptionMsg>, config?: CreateAxiosDefaults, extraOptions?: ExtraOptions): BigAxiosInstance {
       this.exception = new Exceptions(serviceApiErrorMsgs);
 
       const myOptions = { loginPath: '/login', successfulCodes: [200, 0, '200'], responseDataObjectKey: 'data', ...extraOptions };
@@ -137,7 +137,7 @@ class BigAxios {
             (response) => {
                if (
                   myOptions.successfulCodes.includes(response.data.code) &&
-                  response.data[responseDataObjectKey] === null &&
+                  response.data[myOptions.responseDataObjectKey] === null &&
                   Object.hasOwn(myOptions, 'defaultResponseData')
                ) {
                   return Promise.resolve({
