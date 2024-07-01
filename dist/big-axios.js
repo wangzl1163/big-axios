@@ -1,5 +1,5 @@
 /*!
- * @license :big-axios - V1.0.0-beta.4 - 06/02/2024
+ * @license :big-axios - V1.1.0-beta.0 - 01/07/2024
  * https://github.com/wangzl1163/big-axios
  * Copyright (c) 2024 @wangzl1163; Licensed MIT
  */
@@ -205,17 +205,24 @@ class BigAxios {
    * 创建 big-axios 实例
    * @param serviceApiErrorMsgs 服务端返回的错误码与错误信息
    * @param config 配置，可参考 axios 的配置项
-   * @param {loginPath,successfulCodes} loginPath：登录页面路径，默认值：/login，用于未登录时跳转到登录页面；successfulCodes：业务 api 返回的成功状态码，默认值：[200, 0, '200']
+   * @param extraOptions loginPath：登录页面路径，默认值：/login，用于未登录时跳转到登录页面；
+   *                     successfulCodes：业务 api 返回的成功状态码，默认值：[200, 0, '200']；
+   *                     responseDataObjectKey：请求响应数据（response.data）中的值为请求结果的属性的名称，默认值：data；
+   *                     defaultResponseData：用于指定请求返回结果的默认值，结合 responseDataObjectKey 使用；
    * @returns {BigAxiosInstance} big-axios 实例
    */
-  create(serviceApiErrorMsgs, config, {
-    loginPath = '/login',
-    successfulCodes = [200, 0, '200']
-  } = {}) {
+  create(serviceApiErrorMsgs, config, extraOptions) {
     this.exception = new Exceptions(serviceApiErrorMsgs);
+    const myOptions = {
+      loginPath: '/login',
+      successfulCodes: [200, 0, '200'],
+      responseDataObjectKey: 'data',
+      ...extraOptions
+    };
     this.url = '';
     this.data = {};
     this.http = external_axios_default().create(config);
+
     // 创建内置请求拦截器
     this.interceptorIds.push(this.http.interceptors.request.use(config => {
       // 设置请求可取消
@@ -227,9 +234,10 @@ class BigAxios {
         message: this.exception.getExceptionMsg(-9999)
       };
     }));
+
     // 创建内置响应拦截器
     this.interceptorIds.push(this.http.interceptors.response.use(response => {
-      if (successfulCodes.includes(response.data.code) || response.headers['content-type'] === 'application/octet-stream' || response.headers['content-type'] === 'image/Jpeg') {
+      if (myOptions.successfulCodes.includes(response.data.code) || response.headers['content-type'] === 'application/octet-stream' || response.headers['content-type'] === 'image/Jpeg') {
         return Promise.resolve(response);
       } else {
         const errorData = {
@@ -247,8 +255,8 @@ class BigAxios {
           // 多个接口同时请求，只提示一次登录过期
           if (queue401.length === 1) {
             errMsg = this.exception.getExceptionMsg(err.response.status, err.response.data.message || err.response.data.errMsg || '登录信息已过期');
-            if (!location.href.includes(loginPath)) {
-              location.href = loginPath;
+            if (!location.href.includes(myOptions.loginPath)) {
+              location.href = myOptions.loginPath;
             }
           }
         } else {
@@ -268,6 +276,19 @@ class BigAxios {
       };
       return Promise.reject(errorData);
     }));
+    this.interceptorIds.push(this.http.interceptors.response.use(response => {
+      if (myOptions.successfulCodes.includes(response.data.code) && response.data[myOptions.responseDataObjectKey] === null && Object.hasOwn(myOptions, 'defaultResponseData')) {
+        return Promise.resolve({
+          ...response,
+          data: {
+            ...response.data,
+            [myOptions.responseDataObjectKey]: myOptions.defaultResponseData
+          }
+        });
+      } else {
+        return response;
+      }
+    }, err => err));
     return this;
   }
   interceptors = {
