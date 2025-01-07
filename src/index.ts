@@ -233,10 +233,10 @@ class BigAxios {
          }
          case 'POST': {
             return new Promise<U>((resolve, reject) => {
-               if (!this.url.includes('login')) {
+               if (this.options.notRepeated) {
                   const dataJson = JSON.stringify(this.data);
                   if (postRequestList.find((pd) => pd.url === this.url && pd.data === dataJson)) {
-                     return reject({ message: '请不要提交重复的数据' });
+                     return reject({ message: this.options.notRepeatedMsg || '请不要提交重复的数据' });
                   }
                   postRequestList.push({ url: this.url, data: dataJson });
                }
