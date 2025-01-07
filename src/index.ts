@@ -32,7 +32,7 @@ class BigAxios {
    private url: string;
    private type: string | undefined;
    private data: Record<string, any>;
-   private options: AxiosRequestConfig;
+   private options: BigAxiosRequestConfig;
    private interceptorIds: number[] = [];
    private exception: Exceptions = null;
 
