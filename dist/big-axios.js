@@ -1,5 +1,5 @@
 /*!
- * @license :big-axios - V1.1.0-beta.0 - 07/01/2025
+ * @license :big-axios - V1.2.0 - 07/01/2025
  * https://github.com/wangzl1163/big-axios
  * Copyright (c) 2025 @wangzl1163; Licensed MIT
  */
