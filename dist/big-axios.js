@@ -1,7 +1,7 @@
 /*!
- * @license :big-axios - V1.1.0-beta.0 - 01/07/2024
+ * @license :big-axios - V1.1.0-beta.0 - 07/01/2025
  * https://github.com/wangzl1163/big-axios
- * Copyright (c) 2024 @wangzl1163; Licensed MIT
+ * Copyright (c) 2025 @wangzl1163; Licensed MIT
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -191,14 +191,10 @@ const queue401 = [];
 let controller = new AbortController();
 let postRequestList = [];
 class BigAxios {
-  http = external_axios_default().create();
   interceptorIds = [];
   exception = null;
-  get axiosHttp() {
-    return this.http;
-  }
-  get builtInInterceptorIds() {
-    return this.interceptorIds;
+  constructor() {
+    this.create();
   }
 
   /**
@@ -282,35 +278,35 @@ class BigAxios {
           ...response,
           data: {
             ...response.data,
-            [myOptions.responseDataObjectKey]: myOptions.defaultResponseData
+            [myOptions.responseDataObjectKey]: response.config.defaultResponseData == undefined ? myOptions.defaultResponseData : response.config.defaultResponseData
           }
         });
       } else {
         return response;
       }
     }, err => err));
+    this.interceptors = {
+      request: {
+        ...this.http.interceptors.request,
+        use: (onFulfilled, onRejected, options = {
+          synchronous: false,
+          runWhen: null
+        }) => {
+          return this.http.interceptors.request.use(onFulfilled, onRejected, options);
+        }
+      },
+      response: {
+        ...this.http.interceptors.response,
+        use: (onFulfilled, onRejected, options = {
+          synchronous: false,
+          runWhen: null
+        }) => {
+          return this.http.interceptors.response.use(onFulfilled, onRejected, options);
+        }
+      }
+    };
     return this;
   }
-  interceptors = {
-    request: {
-      ...this.http.interceptors.request,
-      use: (onFulfilled, onRejected, options = {
-        synchronous: false,
-        runWhen: null
-      }) => {
-        return this.http.interceptors.request.use(onFulfilled, onRejected, options);
-      }
-    },
-    response: {
-      ...this.http.interceptors.response,
-      use: (onFulfilled, onRejected, options = {
-        synchronous: false,
-        runWhen: null
-      }) => {
-        return this.http.interceptors.response.use(onFulfilled, onRejected, options);
-      }
-    }
-  };
   ajax(url, data = {}, {
     type = 'GET',
     options = {}
@@ -439,6 +435,12 @@ class BigAxios {
       console.log(`%c error:`, 'font-family:PingFang SC, Microsoft YaHei;', err);
     }
     console.groupEnd();
+  }
+  get builtInInterceptorIds() {
+    return this.interceptorIds;
+  }
+  axiosCreate(config) {
+    return external_axios_default().create(config);
   }
 }
 /* harmony default export */ const src = (new BigAxios());

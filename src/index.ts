@@ -6,17 +6,29 @@ import type {
    AxiosInstance,
    CreateAxiosDefaults,
    AxiosInterceptorOptions,
+   AxiosInterceptorManager,
    InternalAxiosRequestConfig,
    AxiosResponse
 } from 'axios';
-import type { Method, ResponsePromise, Response, ExceptionMsg, BigAxios as BigAxiosInstance, ExtraOptions } from '../types/index';
+import type {
+   Method,
+   ResponsePromise,
+   Response,
+   ExceptionMsg,
+   BigAxios as BigAxiosInstance,
+   ExtraOptions,
+   BigAxiosRequestConfig,
+   BigAxiosResponse,
+   InternalBigAxiosInstance,
+   InternalBigAxiosRequestConfig
+} from '../types/index';
 
 const queue401 = [];
 let controller = new AbortController();
 let postRequestList: { url: string; data: string }[] = [];
 
 class BigAxios {
-   private http: AxiosInstance = axios.create();
+   private http: InternalBigAxiosInstance;
    private url: string;
    private type: string | undefined;
    private data: Record<string, any>;
@@ -24,12 +36,8 @@ class BigAxios {
    private interceptorIds: number[] = [];
    private exception: Exceptions = null;
 
-   get axiosHttp(): AxiosInstance {
-      return this.http;
-   }
-
-   get builtInInterceptorIds(): number[] {
-      return this.interceptorIds;
+   constructor() {
+      this.create();
    }
 
    /**
@@ -42,7 +50,7 @@ class BigAxios {
     *                     defaultResponseData：用于指定请求返回结果的默认值，结合 responseDataObjectKey 使用；
     * @returns {BigAxiosInstance} big-axios 实例
     */
-   create(serviceApiErrorMsgs: Record<string, ExceptionMsg>, config?: CreateAxiosDefaults, extraOptions?: ExtraOptions): BigAxiosInstance {
+   create(serviceApiErrorMsgs?: Record<string, ExceptionMsg>, config?: CreateAxiosDefaults, extraOptions?: ExtraOptions): BigAxiosInstance {
       this.exception = new Exceptions(serviceApiErrorMsgs);
 
       const myOptions = { loginPath: '/login', successfulCodes: [200, 0, '200'], responseDataObjectKey: 'data', ...extraOptions };
@@ -142,7 +150,13 @@ class BigAxios {
                ) {
                   return Promise.resolve({
                      ...response,
-                     data: { ...response.data, [myOptions.responseDataObjectKey]: myOptions.defaultResponseData }
+                     data: {
+                        ...response.data,
+                        [myOptions.responseDataObjectKey]:
+                           response.config.defaultResponseData == undefined
+                              ? myOptions.defaultResponseData
+                              : response.config.defaultResponseData
+                     }
                   });
                } else {
                   return response;
@@ -152,38 +166,45 @@ class BigAxios {
          )
       );
 
+      this.interceptors = {
+         request: {
+            ...this.http.interceptors.request,
+            use: (
+               onFulfilled?:
+                  | ((value: InternalAxiosRequestConfig) => InternalAxiosRequestConfig | Promise<InternalAxiosRequestConfig>)
+                  | null,
+               // eslint-disable-next-line @typescript-eslint/no-explicit-any
+               onRejected?: ((error: any) => any) | null,
+               options: AxiosInterceptorOptions = { synchronous: false, runWhen: null }
+            ): number => {
+               return this.http.interceptors.request.use(onFulfilled, onRejected, options);
+            }
+         },
+         response: {
+            ...this.http.interceptors.response,
+            use: (
+               onFulfilled?: ((value: AxiosResponse) => AxiosResponse | Promise<AxiosResponse>) | null,
+               // eslint-disable-next-line @typescript-eslint/no-explicit-any
+               onRejected?: ((error: any) => any) | null,
+               options: AxiosInterceptorOptions = { synchronous: false, runWhen: null }
+            ): number => {
+               return this.http.interceptors.response.use(onFulfilled, onRejected, options);
+            }
+         }
+      };
+
       return this;
    }
 
-   interceptors = {
-      request: {
-         ...this.http.interceptors.request,
-         use: (
-            onFulfilled?: ((value: InternalAxiosRequestConfig) => InternalAxiosRequestConfig | Promise<InternalAxiosRequestConfig>) | null,
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            onRejected?: ((error: any) => any) | null,
-            options: AxiosInterceptorOptions = { synchronous: false, runWhen: null }
-         ): number => {
-            return this.http.interceptors.request.use(onFulfilled, onRejected, options);
-         }
-      },
-      response: {
-         ...this.http.interceptors.response,
-         use: (
-            onFulfilled?: ((value: AxiosResponse) => AxiosResponse | Promise<AxiosResponse>) | null,
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            onRejected?: ((error: any) => any) | null,
-            options: AxiosInterceptorOptions = { synchronous: false, runWhen: null }
-         ): number => {
-            return this.http.interceptors.response.use(onFulfilled, onRejected, options);
-         }
-      }
+   interceptors: {
+      request: AxiosInterceptorManager<InternalBigAxiosRequestConfig>;
+      response: AxiosInterceptorManager<BigAxiosResponse>;
    };
 
-   ajax<D = any, M = string, U = Response<D, M>>(
+   ajax<D = any, M = string, U = Response<D | Blob, M>>(
       url: string,
       data: Record<string, any> = {},
-      { type = 'GET', options = {} }: { type?: Method; options?: AxiosRequestConfig } = {}
+      { type = 'GET', options = {} }: { type?: Method; options?: BigAxiosRequestConfig } = {}
    ): ResponsePromise<D, M, U> {
       this.url = url;
       this.type = type.toLocaleUpperCase().trim();
@@ -195,7 +216,7 @@ class BigAxios {
             return new Promise<U>((resolve, reject) => {
                const config = Object.assign(this.data, this.options);
                this.http
-                  .get<U>(this.url, config)
+                  .get<U, AxiosResponse<U>>(this.url, config)
                   .then((response) => {
                      // 图片
                      if (response instanceof Blob) {
@@ -221,7 +242,7 @@ class BigAxios {
                }
 
                this.http
-                  .post<U>(this.url, this.data, this.options)
+                  .post<U, AxiosResponse<U>>(this.url, this.data, this.options)
                   .then((response) => {
                      // blob类型
                      if (response instanceof Blob) {
@@ -242,7 +263,7 @@ class BigAxios {
          case 'PUT': {
             return new Promise<U>((resolve, reject) => {
                this.http
-                  .put<U>(this.url, this.data, this.options)
+                  .put<U, AxiosResponse<U>>(this.url, this.data, this.options)
                   .then((response) => {
                      return resolve(response.data);
                   })
@@ -255,7 +276,7 @@ class BigAxios {
          case 'DELETE': {
             return new Promise<U>((resolve, reject) => {
                this.http
-                  .delete<U>(this.url, this.options)
+                  .delete<U, AxiosResponse<U>>(this.url, this.options)
                   .then((response) => {
                      return resolve(response.data);
                   })
@@ -268,19 +289,19 @@ class BigAxios {
       }
    }
 
-   get<D = any, M = string, U = Response<D, M>>(url: string, data = {}, options: AxiosRequestConfig = {}): ResponsePromise<D, M, U> {
+   get<D = any, M = string, U = Response<D, M>>(url: string, data = {}, options: BigAxiosRequestConfig = {}): ResponsePromise<D, M, U> {
       return this.ajax(url, data, { options: options });
    }
 
-   post<D = any, M = string, U = Response<D, M>>(url: string, data = {}, options: AxiosRequestConfig = {}): ResponsePromise<D, M, U> {
+   post<D = any, M = string, U = Response<D, M>>(url: string, data = {}, options: BigAxiosRequestConfig = {}): ResponsePromise<D, M, U> {
       return this.ajax(url, data, { type: 'POST', options: options });
    }
 
-   put<D = any, M = string, U = Response<D, M>>(url: string, data = {}, options: AxiosRequestConfig = {}): ResponsePromise<D, M, U> {
+   put<D = any, M = string, U = Response<D, M>>(url: string, data = {}, options: BigAxiosRequestConfig = {}): ResponsePromise<D, M, U> {
       return this.ajax(url, data, { type: 'PUT', options: options });
    }
 
-   delete<D = any, M = string, U = Response<D, M>>(url: string, options: AxiosRequestConfig = {}): ResponsePromise<D, M, U> {
+   delete<D = any, M = string, U = Response<D, M>>(url: string, options: BigAxiosRequestConfig = {}): ResponsePromise<D, M, U> {
       return this.ajax(url, {}, { type: 'DELETE', options: options });
    }
 
@@ -314,6 +335,14 @@ class BigAxios {
          console.log(`%c error:`, 'font-family:PingFang SC, Microsoft YaHei;', err);
       }
       console.groupEnd();
+   }
+
+   get builtInInterceptorIds(): number[] {
+      return this.interceptorIds;
+   }
+
+   axiosCreate(config?: CreateAxiosDefaults<any>): AxiosInstance {
+      return axios.create(config);
    }
 }
 

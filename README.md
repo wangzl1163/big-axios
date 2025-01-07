@@ -13,6 +13,7 @@ big-axios 是通过未经转译的 ts 文件进行发布的，需要与用户项
 1、内置常见的请求拦截器、响应拦截器。
 2、支持请求错误的日志在浏览器控制台输出。
 3、对文件流进行封装。
+4、支持配置请求的响应默认值。
 
 #### 用法
 
@@ -28,13 +29,23 @@ npm install big-axios
 ```
 
 2、快速上手
+（1）使用原生 axios
 
 ```javascript
-import request from "big-axios";
+import ba from 'big-axios';
+const request = ba.axiosCreate();
+request.('/api/user').then((res) => {});
+```
 
-request.get("/api/user").then(res => {})
+（2）使用 big-axios
+
+```javascript
+import ba from 'big-axios';
+const request = ba.create();
+request.get('/api/user').then((res) => {});
 ```
 
 2.1 概念
+
 > serviceApiErrorMsgs： 服务端返回的错误信息。其值格式为：{ 400: { msg: "请求失败" } }
 > extraOptions： 非 axios 本身的配置项。其默认值为：{ loginPath = '/login', successfulCodes = [200, 0, '200'] }，其中 loginPath 为权限验证未通过时跳转到登录页面的登录页面 url，successfulCodes 为服务端 api 返回的业务状态码。
