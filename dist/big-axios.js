@@ -1,5 +1,5 @@
 /*!
- * @license :big-axios - V1.2.0 - 07/01/2025
+ * @license :big-axios - V1.3.0 - 08/01/2025
  * https://github.com/wangzl1163/big-axios
  * Copyright (c) 2025 @wangzl1163; Licensed MIT
  */
@@ -337,11 +337,11 @@ class BigAxios {
       case 'POST':
         {
           return new Promise((resolve, reject) => {
-            if (!this.url.includes('login')) {
+            if (this.options.notRepeated) {
               const dataJson = JSON.stringify(this.data);
               if (postRequestList.find(pd => pd.url === this.url && pd.data === dataJson)) {
                 return reject({
-                  message: '请不要提交重复的数据'
+                  message: this.options.notRepeatedMsg || '请不要提交重复的数据'
                 });
               }
               postRequestList.push({

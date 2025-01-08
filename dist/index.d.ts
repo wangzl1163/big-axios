@@ -2,7 +2,7 @@
  * @Description: 类型声明文件
  * @Author:
  * @Date: 2024-01-12 13:45:16
- * @LastEditTime: 2024-12-27 16:57:18
+ * @LastEditTime: 2025-01-07 16:33:40
  * @LastEditors: Please set LastEditors
  */
 import type {
@@ -31,6 +31,8 @@ export type ExceptionMsg = { msg: string; callback?: () => void };
 
 export interface BigAxiosRequestConfig extends AxiosRequestConfig {
    defaultResponseData?: Record<string, any>;
+   notRepeated?: boolean;
+   notRepeatedMsg?: string;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
