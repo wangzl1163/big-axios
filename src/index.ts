@@ -162,7 +162,7 @@ class BigAxios {
                   return response;
                }
             },
-            (err) => err
+            (err) => Promise.reject(err)
          )
       );
 
