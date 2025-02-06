@@ -1,5 +1,5 @@
 /*!
- * @license :big-axios - V1.3.0 - 08/01/2025
+ * @license :big-axios - V1.3.1 - 16/01/2025
  * https://github.com/wangzl1163/big-axios
  * Copyright (c) 2025 @wangzl1163; Licensed MIT
  */
@@ -284,7 +284,7 @@ class BigAxios {
       } else {
         return response;
       }
-    }, err => err));
+    }, err => Promise.reject(err)));
     this.interceptors = {
       request: {
         ...this.http.interceptors.request,
