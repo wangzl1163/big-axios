@@ -82,11 +82,7 @@ class BigAxios {
       this.interceptorIds.push(
          this.http.interceptors.response.use(
             (response) => {
-               if (
-                  myOptions.successfulCodes.includes(response.data.code) ||
-                  response.headers['content-type'] === 'application/octet-stream' ||
-                  response.headers['content-type'] === 'image/Jpeg'
-               ) {
+               if (myOptions.successfulCodes.includes(response.data.code) || response.request.responseType === 'blob') {
                   return Promise.resolve(response);
                } else {
                   const errorData = {
@@ -218,11 +214,6 @@ class BigAxios {
                this.http
                   .get<U, AxiosResponse<U>>(this.url, config)
                   .then((response) => {
-                     // 图片
-                     if (response instanceof Blob) {
-                        return resolve(response.data);
-                     }
-
                      return resolve(response.data);
                   })
                   .catch((err) => {
@@ -244,11 +235,6 @@ class BigAxios {
                this.http
                   .post<U, AxiosResponse<U>>(this.url, this.data, this.options)
                   .then((response) => {
-                     // blob类型
-                     if (response instanceof Blob) {
-                        return resolve(response.data);
-                     }
-
                      return resolve(response.data);
                   })
                   .catch((err) => {
