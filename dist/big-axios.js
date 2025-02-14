@@ -1,5 +1,5 @@
 /*!
- * @license :big-axios - V1.3.1 - 16/01/2025
+ * @license :big-axios - V1.3.2 - 14/02/2025
  * https://github.com/wangzl1163/big-axios
  * Copyright (c) 2025 @wangzl1163; Licensed MIT
  */
@@ -233,7 +233,7 @@ class BigAxios {
 
     // 创建内置响应拦截器
     this.interceptorIds.push(this.http.interceptors.response.use(response => {
-      if (myOptions.successfulCodes.includes(response.data.code) || response.headers['content-type'] === 'application/octet-stream' || response.headers['content-type'] === 'image/Jpeg') {
+      if (myOptions.successfulCodes.includes(response.data.code) || response.request.responseType === 'blob') {
         return Promise.resolve(response);
       } else {
         const errorData = {
@@ -323,10 +323,6 @@ class BigAxios {
           return new Promise((resolve, reject) => {
             const config = Object.assign(this.data, this.options);
             this.http.get(this.url, config).then(response => {
-              // 图片
-              if (response instanceof Blob) {
-                return resolve(response.data);
-              }
               return resolve(response.data);
             }).catch(err => {
               this.log(err);
@@ -350,10 +346,6 @@ class BigAxios {
               });
             }
             this.http.post(this.url, this.data, this.options).then(response => {
-              // blob类型
-              if (response instanceof Blob) {
-                return resolve(response.data);
-              }
               return resolve(response.data);
             }).catch(err => {
               postRequestList = postRequestList.filter(pd => pd.url !== err.config.url || pd.data !== err.config.data);
