@@ -2,7 +2,7 @@
  * @Description: 类型声明文件
  * @Author:
  * @Date: 2024-01-12 13:45:16
- * @LastEditTime: 2025-01-07 16:33:40
+ * @LastEditTime: 2025-02-17 16:50:56
  * @LastEditors: Please set LastEditors
  */
 import type {
@@ -64,25 +64,25 @@ export class BigAxios {
       url: string,
       data: Record<string, any>,
       { type, options }: { type?: Method; options?: BigAxiosRequestConfig }
-   ): ResponsePromise<D, M, U>;
+   ): ResponsePromise<D, M, U | Blob>;
    get<D = any, M = string, U = Response<D, M>>(
       url: string,
       data?: Record<string, any>,
       options?: BigAxiosRequestConfig
-   ): ResponsePromise<D, M, U>;
-   delete<D = any, M = string, U = Response<D, M>>(url: string, options?: BigAxiosRequestConfig): ResponsePromise<D, M, U>;
+   ): ResponsePromise<D, M, U | Blob>;
+   delete<D = any, M = string, U = Response<D, M>>(url: string, options?: BigAxiosRequestConfig): ResponsePromise<D, M, U | Blob>;
    // head<D = any, M = string, U = Response<D, M>>(url: string, data:Record<string, any>, options: AxiosRequestConfig): ResponsePromise<D, M, U>;
    // options<D = any, M = string, U = Response<D, M>>(url: string, data:Record<string, any>, options: AxiosRequestConfig): ResponsePromise<D, M, U>;
    post<D = any, M = string, U = Response<D, M>>(
       url: string,
       data?: Record<string, any>,
       options?: BigAxiosRequestConfig
-   ): ResponsePromise<D, M, U>;
+   ): ResponsePromise<D, M, U | Blob>;
    put<D = any, M = string, U = Response<D, M>>(
       url: string,
       data?: Record<string, any>,
       options?: BigAxiosRequestConfig
-   ): ResponsePromise<D, M, U>;
+   ): ResponsePromise<D, M, U | Blob>;
    // patch<D = any, M = string, U = Response<D, M>>(url: string, data:Record<string, any>, options: BigAxiosRequestConfig): ResponsePromise<D, M, U>;
    // postForm<D = any, M = string, U = Response<D, M>>(
    //    url: string,

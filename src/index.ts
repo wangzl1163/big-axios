@@ -201,7 +201,7 @@ class BigAxios {
       url: string,
       data: Record<string, any> = {},
       { type = 'GET', options = {} }: { type?: Method; options?: BigAxiosRequestConfig } = {}
-   ): ResponsePromise<D, M, U> {
+   ): ResponsePromise<D, M, U | Blob> {
       this.url = url;
       this.type = type.toLocaleUpperCase().trim();
       this.data = this.type === 'GET' ? { params: data } : data;
@@ -209,13 +209,17 @@ class BigAxios {
 
       switch (this.type) {
          case 'GET': {
-            return new Promise<U>((resolve, reject) => {
+            return new Promise<U | Blob>((resolve, reject) => {
                const config = Object.assign(this.data, this.options);
                this.http
                   .get<U, AxiosResponse<U>>(this.url, config)
                   .then((response) => {
                      if (response instanceof Blob) {
-                        return resolve(response.data || response);
+                        return resolve(response);
+                     }
+
+                     if (response.data instanceof Blob) {
+                        return resolve(response.data);
                      }
 
                      return resolve(response.data);
@@ -227,7 +231,7 @@ class BigAxios {
             });
          }
          case 'POST': {
-            return new Promise<U>((resolve, reject) => {
+            return new Promise<U | Blob>((resolve, reject) => {
                if (this.options.notRepeated) {
                   const dataJson = JSON.stringify(this.data);
                   if (postRequestList.find((pd) => pd.url === this.url && pd.data === dataJson)) {
@@ -240,7 +244,11 @@ class BigAxios {
                   .post<U, AxiosResponse<U>>(this.url, this.data, this.options)
                   .then((response) => {
                      if (response instanceof Blob) {
-                        return resolve(response.data || response);
+                        return resolve(response);
+                     }
+
+                     if (response.data instanceof Blob) {
+                        return resolve(response.data);
                      }
 
                      return resolve(response.data);
@@ -283,19 +291,31 @@ class BigAxios {
       }
    }
 
-   get<D = any, M = string, U = Response<D, M>>(url: string, data = {}, options: BigAxiosRequestConfig = {}): ResponsePromise<D, M, U> {
+   get<D = any, M = string, U = Response<D, M>>(
+      url: string,
+      data = {},
+      options: BigAxiosRequestConfig = {}
+   ): ResponsePromise<D, M, U | Blob> {
       return this.ajax(url, data, { options: options });
    }
 
-   post<D = any, M = string, U = Response<D, M>>(url: string, data = {}, options: BigAxiosRequestConfig = {}): ResponsePromise<D, M, U> {
+   post<D = any, M = string, U = Response<D, M>>(
+      url: string,
+      data = {},
+      options: BigAxiosRequestConfig = {}
+   ): ResponsePromise<D, M, U | Blob> {
       return this.ajax(url, data, { type: 'POST', options: options });
    }
 
-   put<D = any, M = string, U = Response<D, M>>(url: string, data = {}, options: BigAxiosRequestConfig = {}): ResponsePromise<D, M, U> {
+   put<D = any, M = string, U = Response<D, M>>(
+      url: string,
+      data = {},
+      options: BigAxiosRequestConfig = {}
+   ): ResponsePromise<D, M, U | Blob> {
       return this.ajax(url, data, { type: 'PUT', options: options });
    }
 
-   delete<D = any, M = string, U = Response<D, M>>(url: string, options: BigAxiosRequestConfig = {}): ResponsePromise<D, M, U> {
+   delete<D = any, M = string, U = Response<D, M>>(url: string, options: BigAxiosRequestConfig = {}): ResponsePromise<D, M, U | Blob> {
       return this.ajax(url, {}, { type: 'DELETE', options: options });
    }
 
