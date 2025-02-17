@@ -214,6 +214,10 @@ class BigAxios {
                this.http
                   .get<U, AxiosResponse<U>>(this.url, config)
                   .then((response) => {
+                     if (response instanceof Blob) {
+                        return resolve(response.data || response);
+                     }
+
                      return resolve(response.data);
                   })
                   .catch((err) => {
@@ -235,6 +239,10 @@ class BigAxios {
                this.http
                   .post<U, AxiosResponse<U>>(this.url, this.data, this.options)
                   .then((response) => {
+                     if (response instanceof Blob) {
+                        return resolve(response.data || response);
+                     }
+
                      return resolve(response.data);
                   })
                   .catch((err) => {
